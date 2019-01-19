@@ -166,5 +166,41 @@ public class Snippet01 {
 
     }
 
+    @Nested
+    @DisplayName("Failed Mono")
+    class  FailedMono{
+
+
+        @Test
+        @DisplayName("Exception Mono")
+        void f() {
+
+            Mono<Integer> singleElement = Mono.error(new RuntimeException("Some exception"));
+
+            System.out.println("singleElement String -> " + singleElement);
+
+            System.out.println("singleElement Value -> " + singleElement.block());
+
+        }
+
+        @Test
+        @DisplayName("Exception transformation")
+        void f2() {
+
+            Mono<Integer> singleElement = Mono.error(new RuntimeException("Some exception"));
+
+            Mono<Integer> singleElementP100 = singleElement.map(e -> e * 100);
+
+
+            System.out.println("singleElement String -> " + singleElementP100);
+
+            System.out.println("singleElement Value -> " + singleElementP100.block());
+
+        }
+
+
+    }
+
+
 
 }
