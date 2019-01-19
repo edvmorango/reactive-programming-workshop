@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -173,6 +175,85 @@ public class Snippet02 {
 
 
         }
+
+    }
+
+    @DisplayName("Zip")
+    @Nested
+    class ZipSnippet {
+
+        @Test
+        @DisplayName("Zip simple")
+        void f() {
+
+            Flux<Integer> integerFlux = Flux.just(1, 2, 3, 4, 5);
+            Flux<String> charFlux = Flux.just("a", "b", "c",  "d", "e");
+
+
+            Flux<Tuple2<Integer, String>> zippedFlux = integerFlux.zipWith(charFlux);
+
+            System.out.println("Zipped flux result:" + zippedFlux.collectList().block());
+
+        }
+
+
+        @Test
+        @DisplayName("Zip different number of elements")
+        void f2() {
+
+            Flux<Integer> integerFlux = Flux.just(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+            Flux<String> charFlux = Flux.just("a", "b", "c",  "d");
+
+
+            Flux<Tuple2<Integer, String>> zippedFlux = integerFlux.zipWith(charFlux);
+
+            System.out.println("Zipped different flux result:" + zippedFlux.collectList().block());
+
+
+        }
+
+
+        @Test
+        @DisplayName("Zip independent pipes in the same level (parallelism strategy)")
+        void f3() {
+
+            Mono<Integer> delayedElement = Mono.just("123").delayElement(Duration.ofSeconds(3)).map(Integer::valueOf);
+            Mono<Integer> map = Mono.just(5);
+
+            var merged = map.zipWith(delayedElement).map(a -> a.getT1() + a.getT2());
+
+            System.out.println("Zipped in flux result:" + merged.block());
+
+        }
+
+        @Test
+        @DisplayName("Zip a valid pipe with a empty pipe (avoid resource leak)")
+        void f4() {
+
+            Mono<Integer> delayedElement = Mono.empty();
+            Mono<Integer> map = Mono.just(2).delay(Duration.ofSeconds(5)).map(e -> 10);
+
+            var merged = map.zipWith(delayedElement).map(a -> a.getT1() + a.getT2());
+
+            System.out.println("Zipped in flux result:" + merged.block());
+
+        }
+
+        @Test
+        @DisplayName("Zip a valid action/pipe with a failed pipe (avoid resource leak)")
+        void f5() {
+
+            Mono<Integer> delayedElement = Mono.error(new RuntimeException("Exception"));
+            Mono<Integer> map = Mono.just(2).delay(Duration.ofSeconds(5)).map(e -> 10);
+
+            var merged = map.zipWith(delayedElement).map(a -> a.getT1() + a.getT2());
+
+            System.out.println("Zipped in flux result:" + merged.block());
+
+        }
+
+
+
 
     }
 
