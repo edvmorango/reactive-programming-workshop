@@ -403,7 +403,7 @@ public class Snippet02 {
 
             var result = Mono.just(10).flatMap($ -> Mono.empty());
 
-            System.out.println("Result: "+ result);
+            System.out.println("Result: "+ result.block());
         }
 
 
