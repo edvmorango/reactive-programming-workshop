@@ -283,16 +283,30 @@ public class Snippet02 {
                     return a;
             });
 
-            someMono.block();
+            System.out.println("Result: "+ someMono.block());
 
         }
 
+        @Test
+        @DisplayName("A not idiomatic way to sequence wrapped actions")
+        void f2(){
+
+            Mono<Mono<Integer>> asyncOps = Mono.just("param").map(this::asyncOp);
 
 
+            System.out.println("Async operation result: "+ asyncOps.block().block());
+
+
+
+        }
+
+        Mono<Integer> asyncOp(String param) {
+            return Mono.just(123);
+        }
 
         @Test
         @DisplayName("A not idiomatic way to retain values")
-        void f2() {
+        void f3() {
 
             var someMono = authorizeAsync("user", "123").map(token -> {
 
@@ -312,7 +326,6 @@ public class Snippet02 {
         }
 
 
-        // This 4 methods
         Mono<String> authorizeAsync(String login, String password) {
             return Mono.just("authtoken");
         }
@@ -335,7 +348,70 @@ public class Snippet02 {
 
         }
 
+
+
+        @Test
+        @DisplayName("Failing correctly")
+        void f4(){
+
+            var someMono = Mono.just(10).flatMap(a -> {
+                if(a > 5)
+                    return Mono.error(new CustomException());
+                else
+                    return Mono.just(a);
+            });
+
+            System.out.println("Failing correclty: "+ someMono.block());
+
+        }
+
+
+        @Test
+        @DisplayName("Sequencing async actions correctly")
+        void f5(){
+
+
+            Mono<Integer> asyncOps = Mono.just("param").flatMap(this::asyncOp);
+
+
+            System.out.println("Async operation result correctly: "+ asyncOps.block());
+
+
+        }
+
+
+        @Test
+        @DisplayName("Sequencing async actions correctly")
+        void f6(){
+
+            var result = authorizeAsync("user", "123")
+                    .flatMap(token ->
+                            opWhoNeedsTokenAsync(token)
+                                 .flatMap(op1Result ->
+                                         opWhoNeedsTokenAndParamAsync(op1Result, token)
+                                                 .flatMap(op2Result -> opWhoNeedsTokenAnd2ParamsAsync(op1Result, op2Result, token))))
+                    .map(String::toUpperCase);
+
+
+            System.out.println("Result: " +result.block());
+        }
+
+
+        @Test
+        @DisplayName("Empty circuit-breaker")
+        void f7() {
+
+            var result = Mono.just(10).flatMap($ -> Mono.empty());
+
+            System.out.println("Result: "+ result);
+        }
+
+
+
     }
+
+
+
 
 
 }
