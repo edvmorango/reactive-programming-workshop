@@ -62,6 +62,27 @@ public class Snippet02 {
     }
 
 
+    @DisplayName("Filter")
+    @Nested
+    class FilterSnippet{
+
+        @Test
+        @DisplayName("Filter simple")
+        void f() {
+
+            var result = Mono.just(100).filter(e -> e > 100);
+
+
+            var result2 = Mono.just(100).filter(e -> e > 50);
+
+            System.out.println("Filter result: "+ result.block());
+
+            System.out.println("Filter2 result: "+ result2.block());
+
+
+        }
+
+    }
 
 
 }
