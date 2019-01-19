@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @DisplayName("Mono")
@@ -201,6 +202,90 @@ public class Snippet01 {
 
     }
 
+    @Nested
+    @DisplayName("Pipes")
+    class Structure{
+
+
+        @Test
+        @DisplayName("Transformations as Pipe")
+        void f() throws InterruptedException {
+
+            var someMono =
+                    Mono.just(10)
+                        .map(a -> a * 10)
+                        .map(a -> a.toString())
+                        .map(a -> Long.valueOf(a))
+                        .map(a -> {
+                            System.out.println("Reached the last transformation");
+                            return a * 10L;
+                        });
+
+
+            System.out.println("Some action");
+
+            System.out.println("Another action");
+
+            Thread.sleep(5000);
+
+        }
+
+        @Test
+        @DisplayName("Subscribing a pipe ")
+        void f2() throws InterruptedException {
+
+            var someMono =
+                    Mono.just(10)
+                            .map(a -> a * 10)
+                            .map(a -> a.toString())
+                            .map(a -> Long.valueOf(a))
+                            .map(a -> {
+                                System.out.println("Reached the last transformation");
+                                return a * 10L;
+                            });
+
+
+            someMono.subscribe();
+
+            System.out.println("Some action");
+
+            System.out.println("Another action");
+
+
+            Thread.sleep(2000);
+
+        }
+
+        @Test
+        @DisplayName("Subscribing a heavyweight pipe ")
+        void f3() throws InterruptedException {
+
+            var someMono =
+                    Mono.just(10)
+                            .map(a -> a * 10)
+                            .map(a -> a.toString())
+                            .map(a -> Long.valueOf(a))
+                            .delayElement(Duration.ofSeconds(1))
+                            .map(a -> {
+                                System.out.println("Reached the last transformation");
+                                return a * 10L;
+                            });
+
+
+            someMono.subscribe();
+
+            System.out.println("Some action");
+
+            System.out.println("Another action");
+
+
+            Thread.sleep(2000);
+
+        }
+
+
+
+    }
 
 
 }
