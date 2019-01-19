@@ -258,5 +258,84 @@ public class Snippet02 {
     }
 
 
+    @DisplayName("FlatMap")
+    @Nested
+    class FlatMapSnippet{
+
+        class CustomException extends RuntimeException {
+
+            CustomException() {
+                super("Custom Exception");
+            }
+
+        }
+
+
+
+        @Test
+        @DisplayName("A not idiomatic way to fail")
+        void f() {
+
+            var someMono = Mono.just(10).map(a -> {
+                if(a > 5)
+                    throw new CustomException();
+                else
+                    return a;
+            });
+
+            someMono.block();
+
+        }
+
+
+
+
+        @Test
+        @DisplayName("A not idiomatic way to retain values")
+        void f2() {
+
+            var someMono = authorizeAsync("user", "123").map(token -> {
+
+                Mono<Mono<Mono<String>>> resultOfSequenceOfOperations = opWhoNeedsTokenAsync(token)
+                        .map(op1Result -> {
+                            return opWhoNeedsTokenAndParamAsync(op1Result, token)
+                                    .map(op2Result -> opWhoNeedsTokenAnd2ParamsAsync(op1Result, op2Result, token));
+                        });
+
+                return resultOfSequenceOfOperations;
+
+            });
+
+            Mono<Mono<Mono<Mono<String>>>> upperCaseResult = someMono.map(l1 -> l1.map(l2 -> l2.map(l3 -> l3.map(e -> e.toUpperCase()))));
+
+            System.out.println("Result: " +upperCaseResult.block().block().block().block());
+        }
+
+
+        // This 4 methods
+        Mono<String> authorizeAsync(String login, String password) {
+            return Mono.just("authtoken");
+        }
+
+        Mono<String> opWhoNeedsTokenAsync(String token) {
+
+            return Mono.just("new param");
+
+        }
+
+        Mono<String> opWhoNeedsTokenAndParamAsync(String op1Result, String token) {
+
+            return Mono.just("new param");
+
+        }
+
+        Mono<String> opWhoNeedsTokenAnd2ParamsAsync(String op1Result, String op2Result, String token) {
+
+            return Mono.just("finalResult");
+
+        }
+
+    }
+
 
 }
