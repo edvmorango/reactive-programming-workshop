@@ -10,6 +10,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 
@@ -239,6 +240,44 @@ public class Snippet03 {
 
         }
 
+
+
+        public Runnable webServiceCall(Function<String, Boolean> callback) {
+
+            return new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("Calling Webservice");
+                    try {
+                        Thread.sleep(2000);
+                        callback.apply("Request result");
+                    }catch (Exception e) {}
+                }};
+
+        }
+
+
+
+        @Test
+        @DisplayName("Wrap asynchronous operation into Mono")
+        void f2() throws InterruptedException {
+
+           Mono<String> result = Mono.create(sink -> {
+
+                webServiceCall(new Function<>() {
+                    @Override
+                    public Boolean apply(String s) {
+                        sink.success(s);
+                        return true;
+                    }
+                }).run();
+
+
+            });
+
+           result.doOnSuccess(r -> System.out.println("Result: " + r)).block();
+
+        }
 
     }
 
