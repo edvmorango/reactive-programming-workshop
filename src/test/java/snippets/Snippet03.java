@@ -264,18 +264,39 @@ public class Snippet03 {
 
            Mono<String> result = Mono.create(sink -> {
 
-                webServiceCall(new Function<>() {
-                    @Override
-                    public Boolean apply(String s) {
-                        sink.success(s);
-                        return true;
-                    }
+                webServiceCall(s -> {
+                    sink.success(s);
+                    return true;
                 }).run();
 
 
             });
 
            result.doOnSuccess(r -> System.out.println("Result: " + r)).block();
+
+        }
+
+
+        @Test
+        @DisplayName("Delaying subscription")
+        void f3() throws InterruptedException {
+
+            var flux = Flux.range(1, 3).doOnSubscribe(s -> System.out.println("Subscribed"));
+
+            ConnectableFlux<Integer> connector = flux.publish();
+
+            connector.doOnNext(e -> System.out.println("Subscriber 1: " + e)).subscribe();
+            connector.doOnNext(e -> System.out.println("Subscriber 2: " + e)).subscribe();
+            connector.doOnNext(e -> System.out.println("Subscriber 3: " + e)).subscribe();
+
+            System.out.println("Finish subscribing");
+            Thread.sleep(1000);
+
+            System.out.println("Starting");
+
+            connector.connect();
+
+            Thread.sleep(1000);
 
         }
 
