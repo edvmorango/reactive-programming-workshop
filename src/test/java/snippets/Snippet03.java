@@ -3,8 +3,8 @@ package snippets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import reactor.core.Disposable;
+import reactor.core.publisher.*;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 
-@DisplayName("Flux, ,Processors, Evaluation")
+@DisplayName("Flux/Processors")
 public class Snippet03 {
 
 
-    @DisplayName("Flux")
     @Nested
-    public class PeekObservable{
+    @DisplayName("Flux")
+    class PeekObservable{
 
         @Test
         @DisplayName("Peek elements of Flux/Mono ignoring ")
@@ -172,5 +172,74 @@ public class Snippet03 {
     }
 
 
+    @Nested
+    @DisplayName("Processors/Subjects")
+    class Processors{
+
+
+        @Test
+        @DisplayName("Simple Processor/Subject")
+        void f() throws InterruptedException {
+
+            UnicastProcessor<Integer> processor = UnicastProcessor.create();
+
+            processor
+                    .doOnNext(e -> System.out.println("Element: "+e))
+                    .doOnComplete(() -> System.out.println("FINISHED"))
+                    .subscribe();
+
+            processor.onNext(1);
+
+            Thread.sleep(1000);
+
+            processor.onNext(2);
+
+            Thread.sleep(1000);
+
+            processor.onNext(3);
+
+            Thread.sleep(1000);
+
+            processor.onNext(4);
+
+            Thread.sleep(1000);
+
+            processor.onComplete();
+
+            Thread.sleep(1000);
+
+        }
+
+        @Test
+        @DisplayName("Sink (recommended for multithreading)")
+        void f1() throws InterruptedException{
+
+            var flux = Flux.just(1,2,3,4,5).delayElements(Duration.ofMillis(250));
+            var flux2 = Flux.just(6,7,8,9,10);
+
+            Flux<String> stringFlux = Flux.create(sink -> {
+
+                var inFlux = flux
+                        .delayElements(Duration.ofMillis(500))
+                        .doOnNext(e -> sink.next(Thread.currentThread().getName() + " -> " + e));
+
+
+                var inFlux2 = flux2.doOnNext(e -> sink.next(Thread.currentThread().getName() + " -> " + e));
+
+
+                Flux.merge(inFlux, inFlux2).doOnComplete(sink::complete).subscribe();
+
+            });
+
+            stringFlux
+                    .doOnNext(System.out::println)
+                    .subscribe();
+
+            Thread.sleep(5000);
+
+        }
+
+
+    }
 
 }
