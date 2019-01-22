@@ -39,6 +39,34 @@ public class Exercise01Spec {
     }
 
 
+    @Test
+    @DisplayName("Filter")
+    void f3() {
+
+        List<Integer> opResult = ex.filtering(Flux.range(1, 10)).collectList().block();
+
+        var result = List.of(2, 4, 6, 8, 10);
+
+        assertEquals(opResult, result);
+
+    }
+
+
+
+
+
+
+    @Test
+    @DisplayName("Filter mapping")
+    void f10() {
+
+        List<Integer> opResult = ex.filteringByMap(Flux.range(1, 10)).collectList().block();
+
+        var result = List.of(2, 4, 6, 8, 10);
+
+        assertEquals(opResult, result);
+
+    }
 
 
 }

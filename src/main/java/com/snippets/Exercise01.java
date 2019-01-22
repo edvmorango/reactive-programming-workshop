@@ -18,8 +18,18 @@ public class Exercise01 {
 
     }
 
+    public Flux<Integer> filtering(Flux<Integer> flux){
+
+        return Flux.empty();
+
+    }
 
 
+    public Flux<Integer> filteringByMap(Flux<Integer> flux){
+
+        return Flux.empty();
+
+    }
 
 
 
